@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.38.0 (a8f5d1cbd)
+  labels:
+    io.kompose.service: calibre-web
+  name: calibre-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: calibre-web
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.38.0 (a8f5d1cbd)
+      labels:
+        io.kompose.service: calibre-web
+    spec:
+      containers:
+        - env:
+            - name: DOCKER_MODS
+              value: linuxserver/mods:universal-calibre
+            - name: OAUTHLIB_RELAX_TOKEN_SCOPE
+              value: "1"
+            - name: PGID
+              value: "0"
+            - name: PUID
+              value: "0"
+            - name: TZ
+              value: Etc/UTC
+          image: lscr.io/linuxserver/calibre-web:latest
+          name: calibre-web
+          ports:
+            - containerPort: 8083
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /config
+              name: calibre-web-db
+            - mountPath: /books
+              name: calibre-book-db
+      restartPolicy: Always
+      volumes:
+        - name: calibre-web-db
+          nfs:
+            server: 192.168.2.14
+            path: /var/nfs/shared/default/docker/calibre-web
+
+        - name: calibre-book-db
+          nfs:
+            server: 192.168.2.14
+            path: /var/nfs/shared/default/docker/Calibre

@@ -1,0 +1,49 @@
+---
+services:
+  calibre-web:
+    image: lscr.io/linuxserver/calibre-web:latest
+    container_name: calibre-web
+    environment:
+      - PUID=0
+      - PGID=0
+      - TZ=Etc/UTC
+      - DOCKER_MODS=linuxserver/mods:universal-calibre #optional
+      - OAUTHLIB_RELAX_TOKEN_SCOPE=1 #optional
+    volumes:
+      # - calibre-web-db:/config
+      # - Calibre:/books
+      - ./calibre-web/:/config
+      - ./Calibre/:/books
+    ports:
+      - 8083:8083
+    restart: unless-stopped
+
+# Docker currently running in Proxmox LXC unprivileged container so using local folders, but the LXC is backed by a CEPH cluster on
+# a Proxmox HA cluster, so the data is still shared and HA.
+# Can also use host mount points instead of volumes to avoid permission issues with NFS mounts, if we want to store files on the NAS NFS share instead.
+
+# Volume definitions - NFS configuration lives here
+# volumes:
+#   calibre-web-db:
+#     # Use the local driver with NFS-specific options
+#     driver: local
+#     driver_opts:
+#       # Specify NFS as the filesystem type
+#       type: nfs
+#       # Mount options: NAS IP, NFS version, and behavior flags
+#       # soft = return errors on timeout, nolock = disable file locking
+#       o: addr=192.168.2.14,nfsvers=4.1,soft,nolock
+#       # NFS export path on your NAS (note the leading colon)
+#       device: ":/var/nfs/shared/default/docker/calibre-web"
+
+#   Calibre:
+#     # Use the local driver with NFS-specific options
+#     driver: local
+#     driver_opts:
+#       # Specify NFS as the filesystem type
+#       type: nfs
+#       # Mount options: NAS IP, NFS version, and behavior flags
+#       # soft = return errors on timeout, nolock = disable file locking
+#       o: addr=192.168.2.14,nfsvers=4.1,soft,nolock
+#       # NFS export path on your NAS (note the leading colon)
+#       device: ":/var/nfs/shared/default/docker/Calibre"

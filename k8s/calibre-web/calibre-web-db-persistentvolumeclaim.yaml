@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    io.kompose.service: calibre-web-db
+  name: calibre-web-db
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Mi
+  nfs:
+    server: 192.168.2.14
+    path: /default/docker/calibre-web
