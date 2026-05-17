@@ -4,6 +4,8 @@ volumes:
 
 services:
   freshrss:
+    networks:
+    - proxy
     image: freshrss/freshrss:edge
     # Optional build section if you want to build the image locally:
     build:
@@ -24,9 +26,9 @@ services:
       - ./config.custom.php:/var/www/FreshRSS/data/config.custom.php
       # Optional file providing custom user settings (used before a new user is created)
       - ./config-user.custom.php:/var/www/FreshRSS/data/config-user.custom.php
-    ports:
-      # If you want to open a port 8080 on the local machine:
-      - "8080:80"
+    # ports:
+    #   # If you want to open a port 8080 on the local machine:
+    #   - "8080:80"
     environment:
       # A timezone http://php.net/timezones (default is UTC)
       TZ: US/Indianapolis
@@ -42,7 +44,7 @@ services:
       # This impacts which IP address is logged (X-Forwarded-For or REMOTE_ADDR).
       # This also impacts external authentication methods;
       # see https://freshrss.github.io/FreshRSS/en/admins/09_AccessControl.html
-      #TRUSTED_PROXY: 172.16.0.1/12 192.168.0.1/16
+      TRUSTED_PROXY: 172.20.0.0/16
       # Optional parameter, set to 1 to enable OpenID Connect (only available in our Debian image)
       # Requires more environment variables. See https://freshrss.github.io/FreshRSS/en/admins/16_OpenID-Connect.html
       OIDC_ENABLED: 0
@@ -68,3 +70,12 @@ services:
       start_interval: 11s
       interval: 75s
       retries: 3
+
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.freshrss.rule=Host(`freshrss.rmcgreevy.com`)
+      - traefik.http.routers.freshrss.entrypoints=web
+      - traefik.http.services.freshrss.loadbalancer.server.port=80
+networks:
+  proxy:
+    external: true

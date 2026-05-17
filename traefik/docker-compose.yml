@@ -1,0 +1,33 @@
+name: traefik-proxy
+
+services:
+  traefik:
+    image: traefik:v3.6
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.web.address=:80"
+#      - "--entryPoints.web.forwardedHeaders.insecure=true"
+      - "forwardedHeaders.trustedIPs=18.221.98.231/32" # AWS IP for ec2 instance, needed for correct client IP logging
+      - "--accesslog=true"
+      - "--accesslog.format=json"
+      - "--accesslog.filters.statusCodes=400-599"
+      - "--accesslog.filters.retryAttempts=true"
+      - "--accesslog.filters.minDuration=10s"
+      - "--accesslog.filters.excludePath=/api/v1/gerbil/receive-bandwidth"
+      - "--log.format=json"
+      - "--log.level=INFO"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
