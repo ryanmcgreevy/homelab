@@ -1,6 +1,10 @@
 name: pangolin
 services:
   pangolin:
+    environment:
+        - SERVER_SECRET=${SERVER_SECRET}
+        - EMAIL_SMTP_USER=${EMAIL_SMTP_USER}
+        - EMAIL_SMTP_PASS=${EMAIL_SMTP_PASS}
     image: fosrl/pangolin:1.17.1
     container_name: pangolin
     restart: unless-stopped
