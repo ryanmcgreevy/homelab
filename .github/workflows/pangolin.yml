@@ -38,9 +38,15 @@ jobs:
           SOURCE: "pangolin/"
           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
           REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          TARGET: ${{ secrets.REMOTE_TARGET }}
+          SCRIPT_AFTER_REQUIRED: true
           SCRIPT_AFTER: |
-            export SERVER_SECRET='${{ secrets.SERVER_SECRET }}'
-            export EMAIL_SMTP_USER='${{ secrets.EMAIL_SMTP_USER }}'
-            export EMAIL_SMTP_PASS='${{ secrets.EMAIL_SMTP_PASS }}'
-            docker compose down
-            docker compose up -d
+            set -e
+            cd '${{ secrets.REMOTE_TARGET }}'
+            cat > .env <<EOF
+            SERVER_SECRET=${{ secrets.SERVER_SECRET }}
+            EMAIL_SMTP_USER=${{ secrets.EMAIL_SMTP_USER }}
+            EMAIL_SMTP_PASS=${{ secrets.EMAIL_SMTP_PASS }}
+            EOF
+            docker compose --env-file .env -f docker-compose.yml down
+            docker compose --env-file .env -f docker-compose.yml up -d
