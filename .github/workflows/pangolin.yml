@@ -41,4 +41,5 @@ jobs:
             export EMAIL_SMTP_USER=${{ secrets.EMAIL_SMTP_USER }}
             export EMAIL_SMTP_PASS=${{ secrets.EMAIL_SMTP_PASS }}
           SCRIPT_AFTER: |
+            docker compose down
             docker compose up -d
