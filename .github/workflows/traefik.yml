@@ -20,10 +20,12 @@ jobs:
     environment: deployment_traefik
     runs-on: self-hosted
 
+
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - uses: actions/checkout@v4
-      - name: cd to traefik
-        run: cd traefik
+    #   - name: cd to traefik
+    #     run: cd traefik
       - name: deploy
         run: docker compose up -d
+        working-directory: ./traefik

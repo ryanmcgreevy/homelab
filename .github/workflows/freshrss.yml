@@ -30,8 +30,8 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - uses: actions/checkout@v4
-      - name: cd to freshrss
-        run: cd freshrss
+    #   - name: cd to freshrss
+    #     run: cd freshrss
       - name: make env file
         run: |
           cat > .env <<EOF
@@ -41,5 +41,7 @@ jobs:
           BASE_URL=${{ secrets.BASE_URL }}
           PUBLISHED_PORT=${{ secrets.PUBLISHED_PORT }}
           EOF
+        working-directory: ./freshrss
       - name: deploy
         run: docker compose up -d
+        working-directory: ./freshrss
