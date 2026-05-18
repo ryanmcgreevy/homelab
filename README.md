@@ -4,4 +4,6 @@ IaC for my homelab
 [![FreshRSS Deployment](https://github.com/ryanmcgreevy/homelab/actions/workflows/freshrss.yml/badge.svg)](https://github.com/ryanmcgreevy/homelab/actions/workflows/freshrss.yml)
 [![Traefik Deployment](https://github.com/ryanmcgreevy/homelab/actions/workflows/traefik.yml/badge.svg)](https://github.com/ryanmcgreevy/homelab/actions/workflows/traefik.yml)
 
-[![Homelab Diagram](images/homelab_diagram.jpg)](images/homelab_diagram.jpg)
+<a href="images/homelab_diagram.jpg">
+	<img src="images/homelab_diagram.jpg" alt="Homelab Diagram" width="360" style="max-width: 100%; height: auto;" />
+</a>
