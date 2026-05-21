@@ -23,5 +23,5 @@ The configuration for all of this is not currently entirely found in this reposi
 
 ## Architecture Diagram
 
-![Homelab Diagram](images/homelab_diagram.drawio.png)
+![Homelab Diagram](images/homelab_diagram.drawio.jpg)
 
