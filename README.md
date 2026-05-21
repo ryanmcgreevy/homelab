@@ -1,12 +1,12 @@
-# Homelab Infrastructure as Code (IaC) and Documentation
+# Homelab Configuration, Infrastructure as Code (IaC) and Documentation
 
 [![Pangolin Deployment](https://github.com/ryanmcgreevy/homelab/actions/workflows/pangolin.yml/badge.svg)](https://github.com/ryanmcgreevy/homelab/actions/workflows/pangolin.yml)
 [![FreshRSS Deployment](https://github.com/ryanmcgreevy/homelab/actions/workflows/freshrss.yml/badge.svg)](https://github.com/ryanmcgreevy/homelab/actions/workflows/freshrss.yml)
 [![Traefik Deployment](https://github.com/ryanmcgreevy/homelab/actions/workflows/traefik.yml/badge.svg)](https://github.com/ryanmcgreevy/homelab/actions/workflows/traefik.yml)
 
 ## Background
-This repository contains the infrastructure as code (IaC) and documentation for my homelab setup. The goal of this project is to automate the deployment and management of my homelab services using GitHub Actions, Docker Compose, Kubernetes,
-and other GitOps principles.
+This repository contains the configuration files, infrastructure as code (IaC) and documentation for my homelab setup. The goal of this project is to automate the deployment and management of my homelab services using GitHub Actions, Docker Compose, Kubernetes,
+and other GitOps, CI/CD, and IaC principles. This repository is mostly for hands-on learning of all these techniques and technologies, so don't expect production-level code!
 
 ## Overview
 My homelab currently runs:
@@ -19,10 +19,9 @@ Pangolin running on AWS EC2 acts as the proxy to the entire homelab, and everyth
 
 The HA Proxmox Cluster uses Proxmox managed Ceph shared storage for VMs and LXC containers. Cluster communication runs over a dedicated 1 Gbe connection, while VM and LXC communication and migration is over a 2.5 Gbe connection. All of the networking is done through Unifi switches and router.
 
-This repository is my attempt at organizing all of this using IaC and GitOps for management as well as learning.
+The configuration for all of this is not currently entirely found in this repository; this project is a constant work in progress!
 
+## Architecture Diagram
 
-<a href="images/homelab_diagram.jpg">
-	<img src="images/homelab_diagram.jpg" alt="Homelab Diagram" width="360" style="max-width: 100%; height: auto;" />
-</a>
+![Homelab Diagram](images/homelab_diagram.drawio.svg)
 
