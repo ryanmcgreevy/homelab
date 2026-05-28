@@ -10,6 +10,4 @@ spec:
   resources:
     requests:
       storage: 30Gi
-  nfs:
-    server: 192.168.2.14
-    path: /default/docker/Calibre
+  storageClassName: nfs
