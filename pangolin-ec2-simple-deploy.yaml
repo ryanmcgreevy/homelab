@@ -1,4 +1,0 @@
-template-file-path: aws/pangolin-ec2-simple.yaml
-parameters:
-  KeyName: ryan_panoptesoft_ed
-tags: {}
