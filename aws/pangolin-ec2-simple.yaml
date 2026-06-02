@@ -1,0 +1,342 @@
+---
+Metadata:
+  AWSToolsMetrics:
+    IaC_Generator: "arn:aws:cloudformation:us-east-2:801638386573:generatedTemplate/81042162-48a3-4256-aa02-3a69069412c4"
+Parameters:
+  KeyName:
+    Default: "ryan_panoptesoft_ed"
+    Type: "String"
+    Description: "Name of an existing EC2 KeyPair to enable SSH access"
+Resources:
+  EC2SubnetTo:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Subnet"
+    DeletionPolicy: "Retain"
+    Properties:
+      MapPublicIpOnLaunch: false
+      EnableDns64: false
+      VpcId: "vpc-02cebe26d91bdfcef"
+      AvailabilityZoneId: "use2-az1"
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: "ip-name"
+        EnableResourceNameDnsAAAARecord: false
+      AvailabilityZone: "us-east-2a"
+      CidrBlock: "10.1.128.0/20"
+      Ipv6Native: false
+      Ipv6CidrBlock: "2600:1f16:1ca8:3702::/64"
+      Tags:
+      - Value: "lab-subnet-private1-us-east-2a"
+        Key: "Name"
+  EC2Instance:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Instance"
+    DeletionPolicy: "Retain"
+    Properties:
+      Tenancy: "default"
+      PrivateIpAddress: "10.1.9.147"
+      MetadataOptions:
+        HttpPutResponseHopLimit: 2
+        HttpProtocolIpv6: "disabled"
+        HttpTokens: "required"
+        InstanceMetadataTags: "disabled"
+        HttpEndpoint: "enabled"
+      InstanceInitiatedShutdownBehavior: "stop"
+      BlockDeviceMappings:
+      - Ebs:
+          SnapshotId: "snap-06baed93ec730fafe"
+          VolumeType: "gp3"
+          Iops: 3000
+          VolumeSize: 12
+          Encrypted: false
+          DeleteOnTermination: true
+        DeviceName: "/dev/sda1"
+      PrivateDnsNameOptions:
+        EnableResourceNameDnsARecord: false
+        HostnameType: "ip-name"
+        EnableResourceNameDnsAAAARecord: false
+      SecurityGroupIds:
+      - "sg-0aacd4855d7a10595"
+      EbsOptimized: true
+      DisableApiTermination: false
+      SourceDestCheck: true
+      PlacementGroupName: ""
+      NetworkInterfaces:
+      - Ipv6Addresses: []
+        SecondaryPrivateIpAddressCount: 0
+        NetworkInterfaceId: "eni-0c74301cd9cc4389d"
+        DeviceIndex: "0"
+      ImageId: "ami-0f2063147c9987b55"
+      InstanceType: "t4g.small"
+      Monitoring: false
+      Tags:
+      - Value: "old"
+        Key: "Name"
+      CreditSpecification:
+        CPUCredits: "unlimited"
+  EFSAccessPoint:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EFS::AccessPoint"
+    DeletionPolicy: "Retain"
+    Properties:
+      FileSystemId: "fs-06b50e707de718d68"
+      RootDirectory:
+        Path: "/config/postgres"
+        CreationInfo:
+          OwnerGid: "1000"
+          Permissions: "0755"
+          OwnerUid: "1000"
+      ClientToken: "console-7c64c0e9-44de-42a2-80ae-8b499d4fa371"
+      AccessPointTags:
+      - Value: "postgres"
+        Key: "Name"
+  SNSTopicPangolin:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::SNS::Topic"
+    DeletionPolicy: "Retain"
+    Properties:
+      FifoTopic: false
+      ArchivePolicy: {}
+      TopicName: "Pangolin"
+  EC2Volume:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Volume"
+    DeletionPolicy: "Retain"
+    Properties:
+      MultiAttachEnabled: false
+      SnapshotId: "snap-06baed93ec730fafe"
+      VolumeType: "gp3"
+      Encrypted: false
+      Size: 12
+      AutoEnableIO: true
+      AvailabilityZoneId: "use2-az1"
+      AvailabilityZone: "us-east-2a"
+      Throughput: 132
+      Iops: 3000
+      Tags: []
+  CloudWatchAlarmAwsec2i0a25c70afcab09d2eGreaterThanOrEqualToThresholdStatusCheckFailedSystem:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::CloudWatch::Alarm"
+    DeletionPolicy: "Retain"
+    Properties:
+      ComparisonOperator: "GreaterThanOrEqualToThreshold"
+      Dimensions:
+      - Value: "i-0a25c70afcab09d2e"
+        Name: "InstanceId"
+      Period: 300
+      EvaluationPeriods: 1
+      Namespace: "AWS/EC2"
+      OKActions: []
+      AlarmActions:
+      - "arn:aws:automate:us-east-2:ec2:recover"
+      - "arn:aws:sns:us-east-2:801638386573:Pangolin"
+      MetricName: "StatusCheckFailed_System"
+      ActionsEnabled: true
+      AlarmDescription: "Alarm on instance i-0a25c70afcab09d2e: Triggered when StatusCheckFailed_System\
+        \ >= 0.99 for 1 consecutive 5-minute periods."
+      AlarmName: "awsec2-i-0a25c70afcab09d2e-GreaterThanOrEqualToThreshold-StatusCheckFailed_System"
+      Statistic: "Average"
+      InsufficientDataActions: []
+      Tags: []
+      Threshold: 0.99
+  EC2Subnet:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Subnet"
+    DeletionPolicy: "Retain"
+    Properties:
+      MapPublicIpOnLaunch: true
+      EnableDns64: false
+      VpcId: "vpc-02cebe26d91bdfcef"
+      AvailabilityZoneId: "use2-az1"
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: "ip-name"
+        EnableResourceNameDnsAAAARecord: false
+      AvailabilityZone: "us-east-2a"
+      CidrBlock: "10.1.0.0/20"
+      Ipv6Native: false
+      Ipv6CidrBlock: "2600:1f16:1ca8:3700::/64"
+      Tags:
+      - Value: "lab-subnet-public1-us-east-2a"
+        Key: "Name"
+  CloudWatchAlarmAwsec2i0a25c70afcab09d2eGreaterThanOrEqualToThresholdStatusCheckFailed:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::CloudWatch::Alarm"
+    DeletionPolicy: "Retain"
+    Properties:
+      ComparisonOperator: "GreaterThanOrEqualToThreshold"
+      Dimensions:
+      - Value: "i-0a25c70afcab09d2e"
+        Name: "InstanceId"
+      Period: 300
+      EvaluationPeriods: 1
+      Namespace: "AWS/EC2"
+      OKActions: []
+      AlarmActions:
+      - "arn:aws:automate:us-east-2:ec2:reboot"
+      - "arn:aws:sns:us-east-2:801638386573:Pangolin"
+      MetricName: "StatusCheckFailed"
+      ActionsEnabled: true
+      AlarmDescription: "Alarm on instance i-0a25c70afcab09d2e: Triggered when StatusCheckFailed\
+        \ >= 0.99 for 1 consecutive 5-minute periods."
+      AlarmName: "awsec2-i-0a25c70afcab09d2e-GreaterThanOrEqualToThreshold-StatusCheckFailed"
+      Statistic: "Average"
+      InsufficientDataActions: []
+      Tags: []
+      Threshold: 0.99
+  EC2SecurityGroup:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::SecurityGroup"
+    DeletionPolicy: "Retain"
+    Properties:
+      GroupDescription: "open to everywhere for pangolin testing"
+      GroupName: "pangolin-open"
+      VpcId: "vpc-02cebe26d91bdfcef"
+      SecurityGroupIngress:
+      - CidrIp: "0.0.0.0/0"
+        IpProtocol: "tcp"
+        FromPort: 80
+        ToPort: 80
+      - CidrIp: "0.0.0.0/0"
+        IpProtocol: "tcp"
+        FromPort: 22
+        ToPort: 22
+      - CidrIp: "0.0.0.0/0"
+        IpProtocol: "udp"
+        FromPort: 51820
+        ToPort: 51820
+      - CidrIp: "0.0.0.0/0"
+        IpProtocol: "tcp"
+        FromPort: 443
+        ToPort: 443
+      - CidrIp: "0.0.0.0/0"
+        IpProtocol: "udp"
+        FromPort: 47111
+        ToPort: 47111
+      SecurityGroupEgress:
+      - CidrIp: "0.0.0.0/0"
+        IpProtocol: "-1"
+        FromPort: -1
+        ToPort: -1
+      - CidrIpv6: "::/0"
+        IpProtocol: "-1"
+        FromPort: -1
+        ToPort: -1
+  EFSMountTarget:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EFS::MountTarget"
+    DeletionPolicy: "Retain"
+    Properties:
+      SecurityGroups:
+      - "sg-0a48028887c24d8ee"
+      FileSystemId: "fs-06b50e707de718d68"
+      IpAddress: "10.1.23.204"
+      SubnetId: "subnet-065b16957d0bd8e9d"
+  EC2VPC:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::VPC"
+    DeletionPolicy: "Retain"
+    Properties:
+      CidrBlock: "10.1.0.0/16"
+      EnableDnsSupport: true
+      InstanceTenancy: "default"
+      EnableDnsHostnames: true
+      Tags:
+      - Value: "lab-vpc"
+        Key: "Name"
+  EC2VolumeAttachment:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::VolumeAttachment"
+    DeletionPolicy: "Retain"
+    Properties:
+      VolumeId: "vol-091a6c8d78d40c94a"
+      InstanceId: "i-0a25c70afcab09d2e"
+      Device: "/dev/sda1"
+      EbsCardIndex: 0
+  EC2SubnetBI:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Subnet"
+    DeletionPolicy: "Retain"
+    Properties:
+      MapPublicIpOnLaunch: true
+      EnableDns64: false
+      VpcId: "vpc-02cebe26d91bdfcef"
+      AvailabilityZoneId: "use2-az2"
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: "ip-name"
+        EnableResourceNameDnsAAAARecord: false
+      AvailabilityZone: "us-east-2b"
+      CidrBlock: "10.1.16.0/20"
+      Ipv6Native: false
+      Ipv6CidrBlock: "2600:1f16:1ca8:3701::/64"
+      Tags:
+      - Value: "lab-subnet-public2-us-east-2b"
+        Key: "Name"
+  EC2NetworkInterface:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::NetworkInterface"
+    DeletionPolicy: "Retain"
+    Properties:
+      SourceDestCheck: true
+      InterfaceType: "interface"
+      Description: ""
+      PrivateIpAddress: "10.1.9.147"
+      SecondaryPrivateIpAddressCount: 0
+      Ipv6PrefixCount: 0
+      Ipv4Prefixes: []
+      Ipv4PrefixCount: 0
+      GroupSet:
+      - "sg-0aacd4855d7a10595"
+      Ipv6Prefixes: []
+      SubnetId: "subnet-02c0d65eb8a23e60d"
+      Tags: []
+  EFSFileSystem:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EFS::FileSystem"
+    DeletionPolicy: "Retain"
+    Properties:
+      KmsKeyId: "arn:aws:kms:us-east-2:801638386573:key/52d41e17-9f85-49d5-8fb0-5523d7831d82"
+      PerformanceMode: "generalPurpose"
+      Encrypted: true
+      FileSystemTags:
+      - Value: "Pangolin-Config"
+        Key: "Name"
+      FileSystemProtection:
+        ReplicationOverwriteProtection: "ENABLED"
+      LifecyclePolicies:
+      - TransitionToIA: "AFTER_30_DAYS"
+      - TransitionToArchive: "AFTER_90_DAYS"
+      ThroughputMode: "elastic"
+      BackupPolicy:
+        Status: "ENABLED"
+  EC2SubnetON:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EC2::Subnet"
+    DeletionPolicy: "Retain"
+    Properties:
+      MapPublicIpOnLaunch: false
+      EnableDns64: false
+      VpcId: "vpc-02cebe26d91bdfcef"
+      AvailabilityZoneId: "use2-az2"
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: "ip-name"
+        EnableResourceNameDnsAAAARecord: false
+      AvailabilityZone: "us-east-2b"
+      CidrBlock: "10.1.144.0/20"
+      Ipv6Native: false
+      Ipv6CidrBlock: "2600:1f16:1ca8:3703::/64"
+      Tags:
+      - Value: "lab-subnet-private2-us-east-2b"
+        Key: "Name"
+  EFSMountTargetFJ:
+    UpdateReplacePolicy: "Retain"
+    Type: "AWS::EFS::MountTarget"
+    DeletionPolicy: "Retain"
+    Properties:
+      SecurityGroups:
+      - "sg-0a48028887c24d8ee"
+      FileSystemId: "fs-06b50e707de718d68"
+      IpAddress: "10.1.9.38"
+      SubnetId: "subnet-02c0d65eb8a23e60d"
