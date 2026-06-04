@@ -1,0 +1,192 @@
+Parameters:
+  KeyName:
+    Default: ryan_panoptesoft_ed
+    Type: String
+    Description: Name of an existing EC2 KeyPair to enable SSH access
+
+Resources:
+  LabVPC:
+    UpdateReplacePolicy: Delete
+    Type: AWS::EC2::VPC
+    DeletionPolicy: Retain
+    Properties:
+      CidrBlock: 10.1.0.0/16
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      EnableDnsHostnames: true
+      Tags:
+        - Value: homelab-vpc
+          Key: Name
+
+  SubnetPublic1:
+    UpdateReplacePolicy: Delete
+    Type: AWS::EC2::Subnet
+    DeletionPolicy: Delete
+    Properties:
+      MapPublicIpOnLaunch: true
+      EnableDns64: false
+      VpcId: !Ref LabVPC
+      AvailabilityZoneId: use2-az1
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: ip-name
+        EnableResourceNameDnsAAAARecord: false
+      CidrBlock: 10.1.16.0/20
+      Tags:
+        - Value: lab-subnet-public1-us-east-2a
+          Key: Name
+
+  SubnetPublic2:
+    UpdateReplacePolicy: Delete
+    Type: AWS::EC2::Subnet
+    DeletionPolicy: Delete
+    Properties:
+      MapPublicIpOnLaunch: true
+      EnableDns64: false
+      VpcId: !Ref LabVPC
+      AvailabilityZoneId: use2-az2
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: ip-name
+        EnableResourceNameDnsAAAARecord: false
+      CidrBlock: 10.1.16.0/20
+      Tags:
+        - Value: lab-subnet-public2-us-east-2b
+          Key: Name
+
+  SubnetPrivate1:
+    UpdateReplacePolicy: Delete
+    Type: AWS::EC2::Subnet
+    DeletionPolicy: Delete
+    Properties:
+      MapPublicIpOnLaunch: false
+      EnableDns64: false
+      VpcId: !Ref LabVPC
+      AvailabilityZoneId: use2-az1
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: ip-name
+        EnableResourceNameDnsAAAARecord: false
+      CidrBlock: 10.1.128.0/20
+      Tags:
+        - Value: lab-subnet-private1-us-east-2a
+          Key: Name
+
+  SubnetPrivate2:
+    UpdateReplacePolicy: Delete
+    Type: AWS::EC2::Subnet
+    DeletionPolicy: Delete
+    Properties:
+      MapPublicIpOnLaunch: false
+      EnableDns64: false
+      VpcId: !Ref LabVPC
+      AvailabilityZoneId: use2-az2
+      PrivateDnsNameOptionsOnLaunch:
+        EnableResourceNameDnsARecord: false
+        HostnameType: ip-name
+        EnableResourceNameDnsAAAARecord: false
+      CidrBlock: 10.1.144.0/20
+      Tags:
+        - Value: lab-subnet-private2-us-east-2b
+          Key: Name
+
+  SecurityGroup:
+    UpdateReplacePolicy: Delete
+    Type: AWS::EC2::SecurityGroup
+    DeletionPolicy: Delete
+    Properties:
+      GroupDescription: open to everywhere for pangolin testing
+      GroupName: pangolin-open-2
+      VpcId: vpc-02cebe26d91bdfcef
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: udp
+          FromPort: 51820
+          ToPort: 51820
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: udp
+          FromPort: 47111
+          ToPort: 47111
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          IpProtocol: '-1'
+        - CidrIpv6: '::/0'
+          IpProtocol: '-1'
+
+  EC2NetworkInterface:
+    UpdateReplacePolicy: Retain
+    Type: AWS::EC2::NetworkInterface
+    DeletionPolicy: Retain
+    Properties:
+      SourceDestCheck: true
+      InterfaceType: interface
+      Description: ''
+      PrivateIpAddress: 10.1.9.147
+      SecondaryPrivateIpAddressCount: 0
+      Ipv6PrefixCount: 0
+      Ipv4Prefixes: []
+      Ipv4PrefixCount: 0
+      GroupSet:
+        - !Ref SecurityGroup
+      Ipv6Prefixes: []
+      SubnetId: !Ref SubnetPublic1
+      Tags: []
+
+  Instance:
+    UpdateReplacePolicy: Delete
+    Type: AWS::EC2::Instance
+    DeletionPolicy: Delete
+    Properties:
+      KeyName: !Ref KeyName
+      Tenancy: default
+      MetadataOptions:
+        HttpPutResponseHopLimit: 2
+        HttpProtocolIpv6: disabled
+        HttpTokens: required
+        InstanceMetadataTags: disabled
+        HttpEndpoint: enabled
+      InstanceInitiatedShutdownBehavior: stop
+      BlockDeviceMappings:
+        - Ebs:
+            VolumeType: gp3
+            Iops: 3000
+            VolumeSize: 20
+            Encrypted: false
+            DeleteOnTermination: true
+          DeviceName: /dev/sda1
+      PrivateDnsNameOptions:
+        EnableResourceNameDnsARecord: false
+        HostnameType: ip-name
+        EnableResourceNameDnsAAAARecord: false
+      SecurityGroupIds:
+        - !Ref SecurityGroup
+      EbsOptimized: true
+      DisableApiTermination: false
+      SourceDestCheck: true
+      PlacementGroupName: ''
+      NetworkInterfaces:
+        - Ipv6Addresses: []
+          SecondaryPrivateIpAddressCount: 0
+          NetworkInterfaceId: !Ref EC2NetworkInterface
+          DeviceIndex: '0'
+      ImageId: ami-0f2063147c9987b55
+      InstanceType: t4g.small
+      Monitoring: false
+      Tags:
+        - Value: homelab-pangolin-cfstack
+          Key: Name
+      CreditSpecification:
+        CPUCredits: unlimited
+
