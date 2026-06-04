@@ -97,7 +97,7 @@ Resources:
     Properties:
       GroupDescription: open to everywhere for pangolin testing
       GroupName: pangolin-open-2
-      VpcId: vpc-02cebe26d91bdfcef
+      VpcId: !Ref LabVPC
       SecurityGroupIngress:
         - CidrIp: 0.0.0.0/0
           IpProtocol: tcp
