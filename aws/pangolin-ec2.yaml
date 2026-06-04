@@ -170,8 +170,8 @@ Resources:
         EnableResourceNameDnsARecord: false
         HostnameType: ip-name
         EnableResourceNameDnsAAAARecord: false
-      SecurityGroupIds:
-        - !Ref SecurityGroup
+      # SecurityGroupIds:
+      #   - !Ref SecurityGroup
       EbsOptimized: true
       DisableApiTermination: false
       SourceDestCheck: true
