@@ -10,7 +10,7 @@ Resources:
     Type: AWS::EC2::VPC
     DeletionPolicy: Retain
     Properties:
-      CidrBlock: 10.1.0.0/16
+      CidrBlock: 10.2.0.0/16
       EnableDnsSupport: true
       InstanceTenancy: default
       EnableDnsHostnames: true
@@ -31,7 +31,7 @@ Resources:
         EnableResourceNameDnsARecord: false
         HostnameType: ip-name
         EnableResourceNameDnsAAAARecord: false
-      CidrBlock: 10.1.16.0/20
+      CidrBlock: 10.2.16.0/20
       Tags:
         - Value: lab-subnet-public1-us-east-2a
           Key: Name
@@ -49,7 +49,7 @@ Resources:
         EnableResourceNameDnsARecord: false
         HostnameType: ip-name
         EnableResourceNameDnsAAAARecord: false
-      CidrBlock: 10.1.16.0/20
+      CidrBlock: 10.2.32.0/20
       Tags:
         - Value: lab-subnet-public2-us-east-2b
           Key: Name
@@ -67,7 +67,7 @@ Resources:
         EnableResourceNameDnsARecord: false
         HostnameType: ip-name
         EnableResourceNameDnsAAAARecord: false
-      CidrBlock: 10.1.128.0/20
+      CidrBlock: 10.2.128.0/20
       Tags:
         - Value: lab-subnet-private1-us-east-2a
           Key: Name
@@ -85,7 +85,7 @@ Resources:
         EnableResourceNameDnsARecord: false
         HostnameType: ip-name
         EnableResourceNameDnsAAAARecord: false
-      CidrBlock: 10.1.144.0/20
+      CidrBlock: 10.2.144.0/20
       Tags:
         - Value: lab-subnet-private2-us-east-2b
           Key: Name
@@ -133,7 +133,7 @@ Resources:
       SourceDestCheck: true
       InterfaceType: interface
       Description: ''
-      PrivateIpAddress: 10.1.9.147
+      #PrivateIpAddress: 10.1.9.147
       SecondaryPrivateIpAddressCount: 0
       Ipv6PrefixCount: 0
       Ipv4Prefixes: []
