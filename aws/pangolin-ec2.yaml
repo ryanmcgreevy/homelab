@@ -296,7 +296,7 @@ Resources:
       #     SecondaryPrivateIpAddressCount: 0
       #     NetworkInterfaceId: !Ref EC2NetworkInterface
       #     DeviceIndex: '0'
-      ImageId: ami-04e0a05d895775119
+      ImageId: ami-05f532c9d7d5e9607
       InstanceType: t4g.small
       Monitoring: false
       Tags:
