@@ -142,8 +142,8 @@ Resources:
     UpdateReplacePolicy: Delete
     Type: AWS::EC2::NetworkInterface
     DeletionPolicy: Delete
-    DeleteOnTermination: true
     Properties:
+      DeleteOnTermination: true
       SourceDestCheck: true
       InterfaceType: interface
       Description: ''
