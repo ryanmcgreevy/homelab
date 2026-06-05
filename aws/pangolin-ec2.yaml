@@ -139,9 +139,10 @@ Resources:
           Key: env
 
   EC2NetworkInterface:
-    UpdateReplacePolicy: Retain
+    UpdateReplacePolicy: Delete
     Type: AWS::EC2::NetworkInterface
-    DeletionPolicy: Retain
+    DeletionPolicy: Delete
+    DeleteOnTermination: true
     Properties:
       SourceDestCheck: true
       InterfaceType: interface
