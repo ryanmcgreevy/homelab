@@ -143,7 +143,6 @@ Resources:
     Type: AWS::EC2::NetworkInterface
     DeletionPolicy: Delete
     Properties:
-      DeleteOnTermination: true
       SourceDestCheck: true
       InterfaceType: interface
       Description: ''
