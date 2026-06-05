@@ -17,6 +17,8 @@ Resources:
       Tags:
         - Value: homelab-vpc
           Key: Name
+        - Value: homelab-test
+          Key: env
 
   SubnetPublic1:
     UpdateReplacePolicy: Delete
@@ -35,6 +37,8 @@ Resources:
       Tags:
         - Value: lab-subnet-public1-us-east-2a
           Key: Name
+        - Value: homelab-test
+          Key: env
 
   SubnetPublic2:
     UpdateReplacePolicy: Delete
@@ -53,6 +57,8 @@ Resources:
       Tags:
         - Value: lab-subnet-public2-us-east-2b
           Key: Name
+        - Value: homelab-test
+          Key: env
 
   SubnetPrivate1:
     UpdateReplacePolicy: Delete
@@ -71,6 +77,8 @@ Resources:
       Tags:
         - Value: lab-subnet-private1-us-east-2a
           Key: Name
+        - Value: homelab-test
+          Key: env
 
   SubnetPrivate2:
     UpdateReplacePolicy: Delete
@@ -89,6 +97,8 @@ Resources:
       Tags:
         - Value: lab-subnet-private2-us-east-2b
           Key: Name
+        - Value: homelab-test
+          Key: env
 
   SecurityGroup:
     UpdateReplacePolicy: Delete
@@ -124,6 +134,9 @@ Resources:
           IpProtocol: '-1'
         - CidrIpv6: '::/0'
           IpProtocol: '-1'
+      Tags:
+        - Value: homelab-test
+          Key: env
 
   EC2NetworkInterface:
     UpdateReplacePolicy: Retain
@@ -142,7 +155,9 @@ Resources:
         - !Ref SecurityGroup
       Ipv6Prefixes: []
       SubnetId: !Ref SubnetPublic1
-      Tags: []
+      Tags:
+        - Value: homelab-test
+          Key: env
 
   Instance:
     UpdateReplacePolicy: Delete
@@ -187,6 +202,8 @@ Resources:
       Tags:
         - Value: homelab-pangolin-cfstack
           Key: Name
+        - Value: homelab-test
+          Key: env
       CreditSpecification:
         CPUCredits: unlimited
 
