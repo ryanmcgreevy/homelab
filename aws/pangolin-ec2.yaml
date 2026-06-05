@@ -138,26 +138,26 @@ Resources:
         - Value: homelab-test
           Key: env
 
-  EC2NetworkInterface:
-    UpdateReplacePolicy: Delete
-    Type: AWS::EC2::NetworkInterface
-    DeletionPolicy: Delete
-    Properties:
-      SourceDestCheck: true
-      InterfaceType: interface
-      Description: ''
-      #PrivateIpAddress: 10.1.9.147
-      SecondaryPrivateIpAddressCount: 0
-      Ipv6PrefixCount: 0
-      Ipv4Prefixes: []
-      Ipv4PrefixCount: 0
-      GroupSet:
-        - !Ref SecurityGroup
-      Ipv6Prefixes: []
-      SubnetId: !Ref SubnetPublic1
-      Tags:
-        - Value: homelab-test
-          Key: env
+  # EC2NetworkInterface:
+  #   UpdateReplacePolicy: Delete
+  #   Type: AWS::EC2::NetworkInterface
+  #   DeletionPolicy: Delete
+  #   Properties:
+  #     SourceDestCheck: true
+  #     InterfaceType: interface
+  #     Description: ''
+  #     #PrivateIpAddress: 10.1.9.147
+  #     SecondaryPrivateIpAddressCount: 0
+  #     Ipv6PrefixCount: 0
+  #     Ipv4Prefixes: []
+  #     Ipv4PrefixCount: 0
+  #     GroupSet:
+  #       - !Ref SecurityGroup
+  #     Ipv6Prefixes: []
+  #     SubnetId: !Ref SubnetPublic1
+  #     Tags:
+  #       - Value: homelab-test
+  #         Key: env
 
   Instance:
     UpdateReplacePolicy: Delete
@@ -185,8 +185,9 @@ Resources:
         EnableResourceNameDnsARecord: false
         HostnameType: ip-name
         EnableResourceNameDnsAAAARecord: false
-      # SecurityGroupIds:
-      #   - !Ref SecurityGroup
+      SecurityGroupIds:
+        - !Ref SecurityGroup
+      SubnetId: !Ref SubnetPublic1
       EbsOptimized: true
       DisableApiTermination: false
       SourceDestCheck: true
@@ -207,11 +208,11 @@ Resources:
       CreditSpecification:
         CPUCredits: unlimited
 
-# Attach ENI separately (this allows for better control)
-MyNetworkInterfaceAttachment:
-  Type: AWS::EC2::NetworkInterfaceAttachment
-  Properties:
-    InstanceId: !Ref Instance
-    NetworkInterfaceId: !Ref EC2NetworkInterface
-    DeviceIndex: 0
-    DeleteOnTermination: true
+# # Attach ENI separately (this allows for better control)
+# MyNetworkInterfaceAttachment:
+#   Type: AWS::EC2::NetworkInterfaceAttachment
+#   Properties:
+#     InstanceId: !Ref Instance
+#     NetworkInterfaceId: !Ref EC2NetworkInterface
+#     DeviceIndex: 0
+#     DeleteOnTermination: true
