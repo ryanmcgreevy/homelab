@@ -191,11 +191,11 @@ Resources:
       DisableApiTermination: false
       SourceDestCheck: true
       PlacementGroupName: ''
-      NetworkInterfaces:
-        - Ipv6Addresses: []
-          SecondaryPrivateIpAddressCount: 0
-          NetworkInterfaceId: !Ref EC2NetworkInterface
-          DeviceIndex: '0'
+      # NetworkInterfaces:
+      #   - Ipv6Addresses: []
+      #     SecondaryPrivateIpAddressCount: 0
+      #     NetworkInterfaceId: !Ref EC2NetworkInterface
+      #     DeviceIndex: '0'
       ImageId: ami-0553474a433bb7c41
       InstanceType: t4g.small
       Monitoring: false
@@ -207,3 +207,11 @@ Resources:
       CreditSpecification:
         CPUCredits: unlimited
 
+# Attach ENI separately (this allows for better control)
+MyNetworkInterfaceAttachment:
+  Type: AWS::EC2::NetworkInterfaceAttachment
+  Properties:
+    InstanceId: !Ref Instance
+    NetworkInterfaceId: !Ref EC2NetworkInterface
+    DeviceIndex: 0
+    DeleteOnTermination: true
