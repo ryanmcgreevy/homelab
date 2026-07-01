@@ -1,0 +1,46 @@
+{
+  "cluster": "homelab",
+  "serviceName": "pangolin-service",
+  "taskDefinition": "pangolin",
+  "desiredCount": 1,
+  "enableExecuteCommand": true,
+  "capacityProviderStrategy": [
+    {
+      "capacityProvider": "Infra-ECS-Cluster-homelab-4d248ccc-ManagedInstancesCapacityProvider-OIFtIX9qwgYw",
+      "weight": 1,
+      "base": 0
+    }
+  ],
+  "deploymentConfiguration": {
+    "deploymentCircuitBreaker": {
+      "enable": true,
+      "rollback": true
+    },
+    "maximumPercent": 200,
+    "minimumHealthyPercent": 100
+  },
+  "networkConfiguration": {
+    "awsvpcConfiguration": {
+      "subnets": [
+        "subnet-02c0d65eb8a23e60d",
+        "subnet-065b16957d0bd8e9d"
+      ],
+      "securityGroups": [
+        "sg-0aacd4855d7a10595"
+      ],
+      "assignPublicIp": "DISABLED"
+    }
+  },
+  "loadBalancers": [
+    {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-2:801638386573:targetgroup/pangolin-ecs-http/4dfd8757c2280bc0",
+      "containerName": "traefik",
+      "containerPort": 80
+    },
+    {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-2:801638386573:targetgroup/pangolin-ecs-https/ee98c9a5ed1f273b",
+      "containerName": "traefik",
+      "containerPort": 443
+    }
+  ]
+}

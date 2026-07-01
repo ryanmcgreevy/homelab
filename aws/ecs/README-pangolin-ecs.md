@@ -1,0 +1,167 @@
+# Pangolin ECS Migration (EC2 Launch Type, awsvpc)
+
+This runbook captures the full set of changes required to move the Pangolin stack from Docker Compose to ECS EC2 in this repository and account.
+
+Validated environment:
+
+- Account: 801638386573
+- Region: us-east-2
+- Active cluster/service: amazing-tiger-sicjnn / pangolin-service-kck693ny
+
+## Source of truth files
+
+- Task definition template: aws/ecs/pangolin-taskdef-ec2-awsvpc.json
+- Service payload reference (homelab): aws/ecs/pangolin-service-homelab.json
+- Service payload reference (amazing-tiger): aws/ecs/pangolin-service-amazing-tiger.json
+- ECS Traefik static config: pangolin/config/traefik/traefik_config_ecs.yml
+- ECS Traefik dynamic config: pangolin/config/traefik/dynamic_config_ecs.yml
+- Original compose dynamic config (unchanged for EC2 compose): pangolin/config/traefik/dynamic_config.yml
+
+## Major migration changes from Docker Compose
+
+### 1) Network model changed (no Compose network_mode equivalent)
+
+Compose used network_mode: service:gerbil. ECS has no direct equivalent.
+
+Working ECS model:
+
+- Single ECS task containing pangolin, gerbil, and traefik
+- Task networkMode: awsvpc (EC2 launch type)
+- Intra-task traffic must use localhost (127.0.0.1) for stable behavior
+
+### 2) Internal endpoint rewrites were required
+
+The original compose-style hostnames (for example pangolin:3000, pangolin:3001, pangolin:3002) caused runtime resolution failures inside ECS awsvpc tasks.
+
+Required rewrites:
+
+- Gerbil command args use localhost for remoteConfig/reportBandwidthTo
+- Traefik provider http endpoint uses localhost
+- ECS dynamic Traefik services use localhost backends
+
+Resulting effective internal paths:
+
+- Pangolin API/internal: http://127.0.0.1:3000 and http://127.0.0.1:3001
+- Pangolin Next.js: http://127.0.0.1:3002
+
+### 3) Split Traefik dynamic config by environment
+
+To keep compose behavior unchanged while fixing ECS:
+
+- Keep pangolin/config/traefik/dynamic_config.yml as compose/original
+- Add pangolin/config/traefik/dynamic_config_ecs.yml for ECS-localhost backends
+- Point pangolin/config/traefik/traefik_config_ecs.yml to /etc/traefik/dynamic_config_ecs.yml
+
+### 4) Port ownership and LB wiring had to change
+
+Ports must be mapped to the container that actually listens:
+
+- Traefik: 80/tcp, 443/tcp, 47111/udp
+- Gerbil: 51820/udp
+
+Service load balancer mappings must follow that ownership:
+
+- 80 -> traefik:80
+- 443 -> traefik:443
+- 47111/udp -> traefik:47111
+- 51820/udp -> gerbil:51820
+
+### 5) awsvpc requires IP target groups
+
+Existing instance-type target groups do not work for awsvpc tasks.
+Target groups must be created as targetType ip and attached to an NLB listener set.
+
+### 6) Secrets moved from plaintext env vars to SSM parameters
+
+Task now consumes secrets from SSM Parameter Store:
+
+- /pangolin/SERVER_SECRET
+- /pangolin/EMAIL_SMTP_USER
+- /pangolin/EMAIL_SMTP_PASS
+
+Execution role requirements (ecsTaskExecutionRole):
+
+- ssm:GetParameters
+- kms:Decrypt (for SecureString decryption path)
+
+### 7) Health check limits needed correction
+
+ECS container healthCheck.retries max is 10. Any higher value fails task registration.
+
+### 8) NAT egress was required for stable runtime
+
+Even on ECS EC2, awsvpc tasks use their own ENIs and private addresses.
+Without public task IP assignment, internet egress requires NAT.
+
+Implemented model:
+
+- NAT gateway in public subnet (with EIP)
+- ECS service tasks running in private subnets
+- Private subnet route 0.0.0.0/0 -> NAT gateway
+
+This unblocked outbound dependencies (for example Traefik plugin retrieval).
+
+### 9) ECS Exec troubleshooting requirements
+
+For reliable ecs execute-command debugging, task role needed ssmmessages channel permissions.
+
+## EFS mount expectations
+
+Task definition mounts EFS filesystem fs-06b50e707de718d68:
+
+- /config -> pangolin config
+- /config/traefik -> Traefik config files
+- /config/letsencrypt -> ACME storage
+- /config/traefik/logs -> Traefik logs
+
+When updating Traefik config in production, upload to EFS paths used by this task definition and force new deployment.
+
+## Deployment flow (us-east-2)
+
+```bash
+aws logs create-log-group \
+  --log-group-name /ecs/pangolin \
+  --region us-east-2 || true
+
+aws ecs register-task-definition \
+  --region us-east-2 \
+  --cli-input-json file://aws/ecs/pangolin-taskdef-ec2-awsvpc.json
+
+aws ecs update-service \
+  --region us-east-2 \
+  --cluster amazing-tiger-sicjnn \
+  --service pangolin-service-kck693ny \
+  --task-definition pangolin \
+  --force-new-deployment
+
+aws ecs wait services-stable \
+  --region us-east-2 \
+  --cluster amazing-tiger-sicjnn \
+  --services pangolin-service-kck693ny
+```
+
+## Verification checklist
+
+1. Service has desired=1, running=1, pending=0
+2. Deployment rollout reaches COMPLETED
+3. NLB target health is healthy for all attached target groups
+4. Public hostname returns HTTP 200
+5. Traefik logs show plugin loaded and no backend resolution errors
+
+## Known failure signatures and fixes
+
+- no such host / bad address for pangolin
+Fix: switch ECS internal backend URLs to localhost and deploy ECS dynamic config.
+
+- AccessDeniedException on ssm:GetParameters
+Fix: add SSM and KMS decrypt permissions to task execution role.
+
+- Plugin middleware invalid due to plugin load/download issues
+Fix: ensure outbound egress (NAT path) and redeploy.
+
+- Service update rejected by LB/TG mismatch
+Fix: use ip target groups for awsvpc and map ports to correct containers.
+
+## Fargate note
+
+This stack is deployed on ECS EC2. Gerbil requires Linux capabilities (NET_ADMIN, SYS_MODULE) and this architecture was implemented for EC2 capacity, not Fargate.

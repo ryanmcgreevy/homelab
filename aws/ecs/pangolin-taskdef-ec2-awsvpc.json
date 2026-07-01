@@ -1,0 +1,190 @@
+{
+  "family": "pangolin",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["EC2"],
+  "cpu": "256",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::801638386573:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::801638386573:role/ECS-role-f5ccbdf2",
+  "containerDefinitions": [
+    {
+      "name": "pangolin",
+      "image": "fosrl/pangolin:1.17.1",
+      "essential": true,
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:3001/api/v1/ || exit 1"],
+        "interval": 10,
+        "timeout": 10,
+        "retries": 10,
+        "startPeriod": 20
+      },
+      "secrets": [
+        {
+          "name": "SERVER_SECRET",
+          "valueFrom": "arn:aws:ssm:us-east-2:801638386573:parameter/pangolin/SERVER_SECRET"
+        },
+        {
+          "name": "EMAIL_SMTP_USER",
+          "valueFrom": "arn:aws:ssm:us-east-2:801638386573:parameter/pangolin/EMAIL_SMTP_USER"
+        },
+        {
+          "name": "EMAIL_SMTP_PASS",
+          "valueFrom": "arn:aws:ssm:us-east-2:801638386573:parameter/pangolin/EMAIL_SMTP_PASS"
+        }
+      ],
+      "mountPoints": [
+        {
+          "sourceVolume": "pangolin-config",
+          "containerPath": "/app/config"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/pangolin",
+          "awslogs-create-group": "true",
+          "awslogs-region": "us-east-2",
+          "awslogs-stream-prefix": "pangolin"
+        }
+      }
+    },
+    {
+      "name": "gerbil",
+      "image": "fosrl/gerbil:1.3.1",
+      "essential": true,
+      "dependsOn": [
+        {
+          "containerName": "pangolin",
+          "condition": "HEALTHY"
+        }
+      ],
+      "command": [
+        "--reachableAt=http://127.0.0.1:3003",
+        "--generateAndSaveKeyTo=/var/config/key",
+        "--remoteConfig=http://127.0.0.1:3001/api/v1/gerbil/get-config",
+        "--reportBandwidthTo=http://127.0.0.1:3001/api/v1/gerbil/receive-bandwidth"
+      ],
+      "linuxParameters": {
+        "capabilities": {
+          "add": ["NET_ADMIN", "SYS_MODULE"]
+        }
+      },
+      "portMappings": [
+        {
+          "containerPort": 51820,
+          "hostPort": 51820,
+          "protocol": "udp"
+        }
+      ],
+      "mountPoints": [
+        {
+          "sourceVolume": "pangolin-config",
+          "containerPath": "/var/config"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/pangolin",
+          "awslogs-create-group": "true",
+          "awslogs-region": "us-east-2",
+          "awslogs-stream-prefix": "gerbil"
+        }
+      }
+    },
+    {
+      "name": "traefik",
+      "image": "traefik:v3.6.13",
+      "essential": true,
+      "dependsOn": [
+        {
+          "containerName": "pangolin",
+          "condition": "HEALTHY"
+        },
+        {
+          "containerName": "gerbil",
+          "condition": "START"
+        }
+      ],
+      "command": [
+        "--configFile=/etc/traefik/traefik_config_ecs.yml",
+        "--providers.http.endpoint=http://127.0.0.1:3001/api/v1/traefik-config"
+      ],
+      "portMappings": [
+        {
+          "containerPort": 80,
+          "hostPort": 80,
+          "protocol": "tcp"
+        },
+        {
+          "containerPort": 443,
+          "hostPort": 443,
+          "protocol": "tcp"
+        },
+        {
+          "containerPort": 47111,
+          "hostPort": 47111,
+          "protocol": "udp"
+        }
+      ],
+      "mountPoints": [
+        {
+          "sourceVolume": "traefik-config",
+          "containerPath": "/etc/traefik",
+          "readOnly": true
+        },
+        {
+          "sourceVolume": "letsencrypt",
+          "containerPath": "/letsencrypt"
+        },
+        {
+          "sourceVolume": "traefik-logs",
+          "containerPath": "/var/log/traefik"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/pangolin",
+          "awslogs-create-group": "true",
+          "awslogs-region": "us-east-2",
+          "awslogs-stream-prefix": "traefik"
+        }
+      }
+    }
+  ],
+  "volumes": [
+    {
+      "name": "pangolin-config",
+      "efsVolumeConfiguration": {
+        "fileSystemId": "fs-06b50e707de718d68",
+        "rootDirectory": "/config",
+        "transitEncryption": "ENABLED"
+      }
+    },
+    {
+      "name": "traefik-config",
+      "efsVolumeConfiguration": {
+        "fileSystemId": "fs-06b50e707de718d68",
+        "rootDirectory": "/config/traefik",
+        "transitEncryption": "ENABLED"
+      }
+    },
+    {
+      "name": "letsencrypt",
+      "efsVolumeConfiguration": {
+        "fileSystemId": "fs-06b50e707de718d68",
+        "rootDirectory": "/config/letsencrypt",
+        "transitEncryption": "ENABLED"
+      }
+    },
+    {
+      "name": "traefik-logs",
+      "efsVolumeConfiguration": {
+        "fileSystemId": "fs-06b50e707de718d68",
+        "rootDirectory": "/config/traefik/logs",
+        "transitEncryption": "ENABLED"
+      }
+    }
+  ]
+}

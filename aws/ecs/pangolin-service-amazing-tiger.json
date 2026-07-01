@@ -1,0 +1,44 @@
+{
+  "cluster": "amazing-tiger-sicjnn",
+  "serviceName": "pangolin-service-kck693ny",
+  "taskDefinition": "pangolin",
+  "desiredCount": 1,
+  "enableExecuteCommand": true,
+  "capacityProviderStrategy": [
+    {
+      "capacityProvider": "Infra-ECS-Cluster-amazing-tiger-sicjnn-928bdbec-AsgCapacityProvider-dDiGXM2Chcgu",
+      "weight": 1,
+      "base": 0
+    }
+  ],
+  "deploymentConfiguration": {
+    "deploymentCircuitBreaker": {
+      "enable": true,
+      "rollback": true
+    },
+    "maximumPercent": 200,
+    "minimumHealthyPercent": 100
+  },
+  "loadBalancers": [
+    {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-2:801638386573:targetgroup/Pangolin/e1c4f00ec6d1531a",
+      "containerName": "traefik",
+      "containerPort": 80
+    },
+    {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-2:801638386573:targetgroup/Pangolin-https/abe2406199ab6850",
+      "containerName": "traefik",
+      "containerPort": 443
+    },
+    {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-2:801638386573:targetgroup/Pangolin-udp/097d008d48f1aa81",
+      "containerName": "gerbil",
+      "containerPort": 51820
+    },
+    {
+      "targetGroupArn": "arn:aws:elasticloadbalancing:us-east-2:801638386573:targetgroup/Pangolin-WG-Homelab/281dac009a8201ae",
+      "containerName": "traefik",
+      "containerPort": 47111
+    }
+  ]
+}

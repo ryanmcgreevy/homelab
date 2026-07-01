@@ -1,0 +1,58 @@
+api:
+  insecure: true
+  dashboard: true
+
+providers:
+  http:
+    endpoint: "http://127.0.0.1:3001/api/v1/traefik-config"
+    pollInterval: "5s"
+  file:
+    filename: "/etc/traefik/dynamic_config_ecs.yml"
+
+experimental:
+  plugins:
+    badger:
+      moduleName: "github.com/fosrl/badger"
+      version: "v1.4.0"
+
+log:
+  level: "INFO"
+  format: "common"
+  maxSize: 100
+  maxBackups: 3
+  maxAge: 3
+  compress: true
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      httpChallenge:
+        entryPoint: web
+      email: "ryanmcgreevy@gmail.com"
+      storage: "/letsencrypt/acme.json"
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+
+entryPoints:
+  udp-47111:
+    address: ":47111/udp"
+  web:
+    address: ":80"
+  websecure:
+    address: ":443"
+    transport:
+      respondingTimeouts:
+        readTimeout: "30m"
+    http:
+      encodedCharacters:
+        allowEncodedSlash: true
+        # allowEncodedBackSlash: true
+        # allowEncodedNullCharacter: true
+        # allowEncodedSemicolon: true
+        # allowEncodedPercent: true
+        allowEncodedQuestionMark: true
+        # allowEncodedHash: true
+      tls:
+        certResolver: "letsencrypt"
+
+serversTransport:
+  insecureSkipVerify: true
