@@ -17,6 +17,28 @@ Resources:
       Tags:
         - Value: homelab-vpc
           Key: Name
+        - Value: homelab-test
+          Key: env
+
+  # Internet Gateway
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: MyVPC-IGW
+        - Key: env
+          Value: homelab-test
+
+  # Attach Internet Gateway
+  InternetGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref LabVPC
+      # Tags:
+      #   - Key: env
+      #     Value: homelab-test
 
   SubnetPublic1:
     UpdateReplacePolicy: Delete
@@ -35,6 +57,8 @@ Resources:
       Tags:
         - Value: lab-subnet-public1-us-east-2a
           Key: Name
+        - Value: homelab-test
+          Key: env
 
   SubnetPublic2:
     UpdateReplacePolicy: Delete
@@ -53,6 +77,8 @@ Resources:
       Tags:
         - Value: lab-subnet-public2-us-east-2b
           Key: Name
+        - Value: homelab-test
+          Key: env
 
   SubnetPrivate1:
     UpdateReplacePolicy: Delete
@@ -71,6 +97,8 @@ Resources:
       Tags:
         - Value: lab-subnet-private1-us-east-2a
           Key: Name
+        - Value: homelab-test
+          Key: env
 
   SubnetPrivate2:
     UpdateReplacePolicy: Delete
@@ -89,6 +117,87 @@ Resources:
       Tags:
         - Value: lab-subnet-private2-us-east-2b
           Key: Name
+        - Value: homelab-test
+          Key: env
+
+  # Route Tables
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref LabVPC
+      Tags:
+        - Key: Name
+          Value: Lab Public Routes
+        - Key: env
+          Value: homelab-test
+
+  PrivateRouteTable1:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref LabVPC
+      Tags:
+        - Key: Name
+          Value: Lab Private Routes (AZ1)
+        - Key: env
+          Value: homelab-test
+
+  PrivateRouteTable2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref LabVPC
+      Tags:
+        - Key: Name
+          Value: Lab Private Routes (AZ2)
+        - Key: env
+          Value: homelab-test
+
+  # Routes
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  # DefaultPrivateRoute1:
+  #   Type: AWS::EC2::Route
+  #   Properties:
+  #     RouteTableId: !Ref PrivateRouteTable1
+  #     DestinationCidrBlock: 0.0.0.0/0
+  #     NatGatewayId: !Ref NatGateway1
+
+  # DefaultPrivateRoute2:
+  #   Type: AWS::EC2::Route
+  #   Properties:
+  #     RouteTableId: !Ref PrivateRouteTable2
+  #     DestinationCidrBlock: 0.0.0.0/0
+  #     NatGatewayId: !Ref NatGateway2
+
+  # Route Table Associations
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref SubnetPublic1
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref SubnetPublic2
+
+  PrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref SubnetPrivate1
+
+  PrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2
+      SubnetId: !Ref SubnetPrivate2
 
   SecurityGroup:
     UpdateReplacePolicy: Delete
@@ -124,25 +233,30 @@ Resources:
           IpProtocol: '-1'
         - CidrIpv6: '::/0'
           IpProtocol: '-1'
+      Tags:
+        - Value: homelab-test
+          Key: env
 
-  EC2NetworkInterface:
-    UpdateReplacePolicy: Retain
-    Type: AWS::EC2::NetworkInterface
-    DeletionPolicy: Retain
-    Properties:
-      SourceDestCheck: true
-      InterfaceType: interface
-      Description: ''
-      #PrivateIpAddress: 10.1.9.147
-      SecondaryPrivateIpAddressCount: 0
-      Ipv6PrefixCount: 0
-      Ipv4Prefixes: []
-      Ipv4PrefixCount: 0
-      GroupSet:
-        - !Ref SecurityGroup
-      Ipv6Prefixes: []
-      SubnetId: !Ref SubnetPublic1
-      Tags: []
+  # EC2NetworkInterface:
+  #   UpdateReplacePolicy: Delete
+  #   Type: AWS::EC2::NetworkInterface
+  #   DeletionPolicy: Delete
+  #   Properties:
+  #     SourceDestCheck: true
+  #     InterfaceType: interface
+  #     Description: ''
+  #     #PrivateIpAddress: 10.1.9.147
+  #     SecondaryPrivateIpAddressCount: 0
+  #     Ipv6PrefixCount: 0
+  #     Ipv4Prefixes: []
+  #     Ipv4PrefixCount: 0
+  #     GroupSet:
+  #       - !Ref SecurityGroup
+  #     Ipv6Prefixes: []
+  #     SubnetId: !Ref SubnetPublic1
+  #     Tags:
+  #       - Value: homelab-test
+  #         Key: env
 
   Instance:
     UpdateReplacePolicy: Delete
@@ -170,23 +284,34 @@ Resources:
         EnableResourceNameDnsARecord: false
         HostnameType: ip-name
         EnableResourceNameDnsAAAARecord: false
-      # SecurityGroupIds:
-      #   - !Ref SecurityGroup
+      SecurityGroupIds:
+        - !Ref SecurityGroup
+      SubnetId: !Ref SubnetPublic1
       EbsOptimized: true
       DisableApiTermination: false
       SourceDestCheck: true
       PlacementGroupName: ''
-      NetworkInterfaces:
-        - Ipv6Addresses: []
-          SecondaryPrivateIpAddressCount: 0
-          NetworkInterfaceId: !Ref EC2NetworkInterface
-          DeviceIndex: '0'
-      ImageId: ami-0f2063147c9987b55
+      # NetworkInterfaces:
+      #   - Ipv6Addresses: []
+      #     SecondaryPrivateIpAddressCount: 0
+      #     NetworkInterfaceId: !Ref EC2NetworkInterface
+      #     DeviceIndex: '0'
+      ImageId: ami-05f532c9d7d5e9607
       InstanceType: t4g.small
       Monitoring: false
       Tags:
         - Value: homelab-pangolin-cfstack
           Key: Name
+        - Value: homelab-test
+          Key: env
       CreditSpecification:
         CPUCredits: unlimited
 
+# # Attach ENI separately (this allows for better control)
+# MyNetworkInterfaceAttachment:
+#   Type: AWS::EC2::NetworkInterfaceAttachment
+#   Properties:
+#     InstanceId: !Ref Instance
+#     NetworkInterfaceId: !Ref EC2NetworkInterface
+#     DeviceIndex: 0
+#     DeleteOnTermination: true
