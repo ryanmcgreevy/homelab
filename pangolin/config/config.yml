@@ -11,6 +11,9 @@ domains:
         cert_resolver: "letsencrypt"
 
 server:
+    # ECS (awsvpc) override: ensure badger middleware reaches Pangolin internal API
+    # by localhost instead of Docker service DNS name.
+    badger_override: "http://127.0.0.1:3001/api/v1"
     #secret:
     maxmind_db_path: "./config/GeoLite2-Country.mmdb" 
     cors:
