@@ -2,7 +2,7 @@
   "cluster": "amazing-tiger-sicjnn",
   "serviceName": "pangolin-service-kck693ny",
   "taskDefinition": "pangolin",
-  "desiredCount": 1,
+  "desiredCount": 0,
   "enableExecuteCommand": true,
   "capacityProviderStrategy": [
     {
